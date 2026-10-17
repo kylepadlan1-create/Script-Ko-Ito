@@ -1,0 +1,254 @@
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local camera = Workspace.CurrentCamera
+
+if CoreGui:FindFirstChild("ScriptKoIto") then
+    CoreGui.ScriptKoIto:Destroy()
+end
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ScriptKoIto"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = CoreGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 320, 0, 440)
+mainFrame.Position = UDim2.new(0.5, -160, 0.5, -220)
+mainFrame.BackgroundColor3 = Color3.fromRGB(15, 60, 140)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = mainFrame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 45)
+title.BackgroundColor3 = Color3.fromRGB(10, 40, 100)
+title.Text = "Script Ko Ito"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 16
+title.Font = Enum.Font.SourceSansBold
+title.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.Parent = title
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1, -10, 1, -55)
+scroll.Position = UDim2.new(0, 5, 0, 50)
+scroll.BackgroundTransparency = 1
+scroll.CanvasSize = UDim2.new(0, 0, 0, 750)
+scroll.ScrollBarThickness = 6
+scroll.Parent = mainFrame
+
+local toggles = {
+    Speed = false,
+    Fly = false,
+    Jump = false,
+    Fullbright = false,
+    ESP = false,
+    Float = false,
+    Hitbox = false,
+    ClickTP = false
+}
+
+local settingsVal = {
+    SpeedVal = 50,
+    JumpVal = 100,
+    HitboxVal = 5
+}
+
+local yPos = 0
+local function createFeature(name, text, hasInput, inputType, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, -10, 0, 45)
+    frame.Position = UDim2.new(0, 5, 0, yPos)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 90, 180)
+    frame.Parent = scroll
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = frame
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0, 160, 1, 0)
+    label.Position = UDim2.new(0, 10, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 14
+    label.Font = Enum.Font.SourceSansBold
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = frame
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 60, 0, 30)
+    btn.Position = UDim2.new(0, 175, 0, 7)
+    btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+    btn.Text = "OFF"
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.SourceSansBold
+    btn.Parent = frame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+    
+    local inputVal
+    if hasInput then
+        inputVal = Instance.new("TextBox")
+        inputVal.Size = UDim2.new(0, 45, 0, 30)
+        inputVal.Position = UDim2.new(0, 240, 0, 7)
+        inputVal.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        inputVal.Text = tostring(settingsVal[inputType])
+        inputVal.TextColor3 = Color3.fromRGB(0, 0, 0)
+        inputVal.TextSize = 13
+        inputVal.Font = Enum.Font.SourceSansBold
+        inputVal.Parent = frame
+        
+        local inputCorner = Instance.new("UICorner")
+        inputCorner.CornerRadius = UDim.new(0, 6)
+        inputCorner.Parent = inputVal
+        
+        inputVal.FocusLost:Connect(function()
+            local num = tonumber(inputVal.Text)
+            if num then
+                settingsVal[inputType] = num
+            else
+                inputVal.Text = tostring(settingsVal[inputType])
+            end
+        end)
+    end
+    
+    btn.MouseButton1Click:Connect(function()
+        toggles[name] = not toggles[name]
+        if toggles[name] then
+            btn.BackgroundColor3 = Color3.fromRGB(40, 180, 40)
+            btn.Text = "ON"
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+            btn.Text = "OFF"
+        end
+        if callback then callback(toggles[name]) end
+    end)
+    
+    yPos = yPos + 52
+end
+
+createFeature("Speed", "Speed Hack", true, "SpeedVal")
+createFeature("Jump", "Jump Power", true, "JumpVal")
+createFeature("Float", "Float", false, nil)
+createFeature("Fly", "Fly Jump", false, nil)
+createFeature("Hitbox", "Hitbox", true, "HitboxVal")
+createFeature("Fullbright", "Fullbright", false, nil)
+createFeature("ESP", "ESP", false, nil)
+createFeature("ClickTP", "Teleport Click", false, nil)
+
+scroll.CanvasSize = UDim2.new(0, 0, 0, yPos + 10)
+
+RunService.RenderStepped:Connect(function()
+    local char = player.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local rootPart = char:FindFirstChild("HumanoidRootPart")
+    
+    if humanoid then
+        if toggles.Speed then
+            humanoid.WalkSpeed = settingsVal.SpeedVal
+        end
+        if toggles.Jump then
+            humanoid.JumpPower = settingsVal.JumpVal
+        end
+    end
+    
+    if rootPart then
+        if toggles.Float then
+            rootPart.Velocity = Vector3.new(rootPart.Velocity.X, 0, rootPart.Velocity.Z)
+        end
+        
+        if toggles.Fly then
+            rootPart.Velocity = Vector3.new(0, 1, 0)
+            local camDir = camera.CoordinateFrame.LookVector
+            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                rootPart.CFrame = rootPart.CFrame + (camDir * (settingsVal.SpeedVal / 10))
+            end
+        end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if toggles.Fullbright then
+        game:GetService("Lighting").Brightness = 2
+        game:GetService("Lighting").ClockTime = 14
+        game:GetService("Lighting").GlobalShadows = false
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    if toggles.Hitbox then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = p.Character.HumanoidRootPart
+                hrp.Size = Vector3.new(settingsVal.HitboxVal, settingsVal.HitboxVal, settingsVal.HitboxVal)
+                hrp.Transparency = 1
+                hrp.CanCollide = false
+            end
+        end
+    end
+end)
+
+local espFolder = Instance.new("Folder")
+espFolder.Name = "ScriptKoItoESP"
+espFolder.Parent = CoreGui
+
+RunService.RenderStepped:Connect(function()
+    espFolder:ClearAllChildren()
+    if toggles.ESP then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+                local head = p.Character.Head
+                local billboard = Instance.new("BillboardGui")
+                billboard.Size = UDim2.new(0, 100, 0, 40)
+                billboard.StudsOffset = Vector3.new(0, 2, 0)
+                billboard.AlwaysOnTop = true
+                billboard.Parent = espFolder
+                billboard.Adornee = head
+                
+                local txt = Instance.new("TextLabel")
+                txt.Size = UDim2.new(1, 0, 1, 0)
+                txt.BackgroundTransparency = 1
+                txt.Text = p.Name
+                txt.TextColor3 = Color3.fromRGB(0, 150, 255)
+                txt.TextStrokeTransparency = 0.5
+                txt.TextSize = 12
+                txt.Font = Enum.Font.SourceSansBold
+                txt.Parent = billboard
+            end
+        end
+    end
+end)
+
+local mouse = player:GetMouse()
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and toggles.ClickTP and input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.RightControl) then
+            if mouse.Target then
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0))
+                end
+            end
+        end
+    end
+end)
